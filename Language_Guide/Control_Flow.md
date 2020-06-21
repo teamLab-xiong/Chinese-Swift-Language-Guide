@@ -566,7 +566,7 @@ if let integerValue = possibleIntegerValue {
 
 因为上例中列出每个可能的`Character`值是不现实的，所以用`default`分支匹配其他所有字符。`default`分支不需要执行任何操作，所以只写了`break`语句作为分支主体。一旦匹配了`default`，`break`语句会终止执行`switch`语句，代码会从`if let`语句继续执行。
 
-### 穿透
+### Fallthrough 穿透
 
 在Swift中，`switch`语句不会穿透每个分支的底部到下一个分支。也就是，当第一个匹配的分支完成时整个`switch`语句也会执行完成。与此相反，C语言需要你在`switch`的每个分支底部显式插入`break`语句以阻止穿透。避免默认穿透意味着Switch的`switch`语句比同样功能的C代码更简洁明了，而且因此防止了意外执行多个分支。
 

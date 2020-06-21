@@ -231,6 +231,13 @@ let exponentDouble = 1.21875e1
 let hexadecimalDouble = 0xC.3p0
 ```
 
+数字字面量可以包含额外的格式，以使得它更加易读。可以向整数和浮点数中填充零（`0`）或下划线（`_`）以增加可读性。这两种方式都不影响字面量的值：
+```swift
+let paddedDouble = 000123.456
+let oneMillion = 1_000_000
+let justOverOneMillion = 1_000_000.000_000_1
+```
+
 ## 数字类型转换
 
 对于代码中所有通用整型的整数用`Int`类型，即便它们是非负。在日常开发中使用默认整型意味着，整型常量和变量直接和代码保持互换性，匹配字面量的类型推导。
@@ -255,14 +262,6 @@ let one: UInt8 = 1
 let twoThousandAndOne = twoThousand + UInt16(one)
 ```
 因为加号的两边都是`UInt16`了，所以允许加法运算。输出类型被推导为`UInt16`类型，因为它是两个`UInt16`的值的和。
-
-为了转换指定类型的数字，用这个值初始化想要的数字类型。下面的例子中，常量`twoThousand`是`UInt16`类型，`one`是`UInt8`类型。由于它们类型不同，所以不能直接相加。所以，例子中用`one`的值创建一个`UInt16`类型的数字，用这个值代替原来的值：
-```swift
-let twoThousand: UInt16 = 2_000
-let one: UInt = 1
-let twoThousandAndOne = twoThousand + UInt16(one)
-```
-因为现在加号的两边都是`UInt16`类型，所以允许执行加法运算。输出常量`twoThousandAndOne`可以被推导出是`UInt16`类型，因为它是两个`UInt16`类型数字的和。
 
 `SomeType(ofInitialValue)`是初始化Swift类型，传入初始值的默认方法。在背后，`UInt16`有一个接受`UInt8`类型值的初始化方法，所以这个方法被用做从已有的`UInt8`值创建`UInt16`值。你不能传入任意类型，但是，它必须是`UInt16`已经提供了初始化方法的类型。扩展已有类型，为其提供接受新类型的初始化方法在[扩展](Extensions.md)中有描述
 
@@ -505,7 +504,7 @@ if let firstNumber = Int("4") {
 ```
 
 > 注意：
-在if语句中用可选绑定创建的常量或变量只在if语句体中可用。想法，用guard语句创建的常量和变量，在guard语句之后的代码中可用。详见[提前推出](Control_Flow.md#提前推出)
+在if语句中用可选绑定创建的常量或变量只在if语句体中可用。想法，用guard语句创建的常量和变量，在guard语句之后的代码中可用。详见[提前退出](Control_Flow.md#提前退出)
 
 ### 隐式解包可选值
 就像上面描述的，可选值表明允许一个常量或变量没有值。可以用`if`语句检查可选值是否含有值，如果有的话，可以用可选绑定的方式有条件解包来访问可选值的值。

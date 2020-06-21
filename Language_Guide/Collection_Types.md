@@ -350,7 +350,7 @@ for genre in favoriteGenres.sorted() {
 
 ### 无序集合基本操作
 
-下面的插图描绘了两个无序集合---`a`和`b`---图形区域代表无序集合操作的结果。
+下面的插图描绘了两个无序集合—`a`和`b`—图形区域代表无序集合操作的结果。
 
 <p align="center">
 <img src="https://docs.swift.org/swift-book/_images/setVennDiagram_2x.png" alt="无序集合基本操作" width="400"/>
