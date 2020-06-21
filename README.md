@@ -1,4 +1,4 @@
-THE SEIFT PROGRAMMING LANGUAGE SWIFT 5.1
+THE SEIFT PROGRAMMING LANGUAGE SWIFT 5.2
 
 #### Wanna join me? fork, translate and pull a request~
 
