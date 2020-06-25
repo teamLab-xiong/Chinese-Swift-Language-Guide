@@ -245,6 +245,114 @@ stepCounter.totalSteps = 896
 > 注意：
 如果把有观察者的属性用作输入输出参数传递给函数，`willSet`和`didSet`将总是被调用。这是因为输入输出参数的复制输入复制输出：在函数的最后，值总被写回到属性。关于输入输出参数的详细讨论，参见[输入输出参数](Language_Reference/Declarations.md#输入输出参数)。
 
+## 属性包装器
+
+属性包装器在管理属性如何被储存的代码，和定义这个属性的代码之间添加一个隔离层。例如，如果你可检查线程安全或将底层数据存放到数据库的属性，你需要在每个使用该属性的地方写上这些代码。当你用属性包装器时，你可以在定义属性包装器的时候，一次性书写管理代码，然后通过把包装器应用在属性上，而重用这些管理代码。
+
+要定义属性包装器，创建一个定义了`wrappedValue`熟悉的结构体、枚举或类。下面的代码，`TwelveOrLess`结构体确保其包装的值总是包含一个小于或等于`12`的值。如果你让其储存一个更大的数，它将只储存`12`。
+```swift
+@propertyWrapper
+struct TwelveOrLess {
+   private var number: Int
+   init() { self.number = 0 }
+   var wrappedValue: Int {
+      get { return number }
+      set { number = min(newValue, 12) }
+   }
+}
+```
+
+`setter`方法确保新值限于12，`getter`方法返回储存的值。
+
+> 注：
+> 上例中，`number`的声明被标记为`private`，这确保`number`只在`TwelveOrLess`中被使用。其他地方的代码只能用`wrappedValue`的`getter`和`setter`方法访问其值，而不能直接用`number`。关于`private`的更多信息，参见[访问控制](Access_Control.md)
+
+通过在属性名前面写上包装器名已使用该包装器。下面的例子，一个存放小矩形的结构体，使用了`TwelveOrLess`属性包装器：
+```swift
+struct SmallRectangle {
+   @TwelveOrLess var height: Int
+   @TwelveOrLess var width: Int
+}
+
+var rectange = SmallRectangle()
+prints(rectange.height)
+// Prints "0"
+
+rectangle.height = 10
+print(rectangle.height)
+// Prints "10"
+
+rectangle.height = 24
+print(rectangle.height)
+// Prints "12"
+```
+
+`height`和`width`属性从`TwelveOrLess`定义中获取初始值，`TwelveOrLess`会将`TwelveOrLess.number`设置成零。因为10比12小，所以能存放成功。当尝试存放24的时候，实际存入了12，因为24对于属性的`setter`规则来说，太大了。
+
+当把包装器用在属性上时，编译器同步为包装器提供储存的代码和通过包装器访问属性的代码。（属性包装器负责储存被包装的值，所有无同步代码。）你可以编写使用属性包装器行为的代码，而不使用特殊属性语法。例如，下面是上例中`SmallRectangle`的一个版本，其显式使用`TwelveOrLess`结构体，而不是写上`@TwelveOrLess`作为属性的性质：
+```swift
+struct SmallRectangle {
+   private var _height = TwelveOrLess()
+   private var _width = TwelveOrLess()
+   var height: Int {
+      get { return _height.wrappedValue }
+      set { _height.wrappedValue = newValue }
+   }
+   var width: Int {
+      get { return _width.wrappedValue }
+      set { _width.wrappedValue = newValue }
+   }
+}
+```
+
+`_height`和`_width`属性存放`TwelveOrLess`包装器的实例。`setter`和`getter`方法`height`和`width`访问`wrappedValue`属性。
+
+### 为被包装的属性设置初始值
+
+上面例子中，通过在`TwelveOrLess`的定义中给`number`一个初始值，为被包装的属性设置初始值。使用这个包装器的代码，不能再为被`TwelveOrLess`包装的属性指定一个不同的初始值—例如，`SmallRectangle`的定义中不能给`height`或`width`初始值。为了支持设置初始值或其他自定义，需要给属性包装器指定初始化方法。下面是`TwelveOrLess`的一个扩展版本`SmallNumber`，它定义了一个设置被包装的值和最大值的初始化方法：
+```swift
+@propertyWrapper
+struct SmallNumber {
+    private var maximum: Int
+    private var number: Int
+
+    var wrappedValue: Int {
+        get { return number }
+        set { number = min(newValue, maximum) }
+    }
+
+    int() {
+        maximum = 12
+        number = 0
+    }
+
+    init(wrappedValue: Int) {
+        maximum = 12
+        number = min(wrappedValue, maximum)
+    }
+
+    init(wrappedValue: Int, maximum: Int) {
+        self.maximum = maximum
+        number = min(wrappedValue, maximum)
+    }
+}
+```
+`SmallNumber`的定义中包括三个初始化方法—`init()`、`init(wrappedValue:)`和`init(wrappedValue:maximum:)`—下面的例子，就会用这些初始化方法来设置包装值和最大值。更多关于初始化和初始化方法的语法，参照[初始化方法](Initialization.md)。
+
+当在属性上用包装器时，不用指定初始值，Swift会用`init()`初始化方法配置包装器。例如：
+```swift
+struct ZeroRectangle {
+    @SmallNumber var height: Int
+    @SmallNumber var width: Int
+}
+
+var zeroRectangle = ZeroRectangle()
+print(zeroRectangle.height, zeroRectangle.width)
+// Prints "0 0"
+```
+
+包装`height`和`width`的`SmallNumber`实例是被`SmallNumber()`创建的。
+
 ## 全局和局部变量
 
 上面描述的计算属性和观察者属性的功能，也适用于全局变量和局部变量。全局变量是定义在任何函数，方法，闭包或类型上下文的外面的变量。局部变量是定义在某一函数，方法或闭包上下文之内的变量。
